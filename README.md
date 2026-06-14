@@ -174,9 +174,26 @@ Contributions are welcome! Feel free to:
 
 ---
 
+## 🙏 Credits
+
+AHK Builder stands on the shoulders of these amazing open-source projects and tools:
+
+| Credits | Usage |
+|---------|-------|
+| [Liyaa (ilyax)](https://github.com/ilyaxuwu) | Entrie of this project. |
+| [Google Blockly](https://developers.google.com/blockly) v10.4.3 | Visual block editor engine — the heart of the UI |
+| [webview_go](https://github.com/webview/webview_go) | Native desktop WebView window |
+| [Font Awesome](https://fontawesome.com/) v6.5.1 | UI icons |
+| [Go](https://go.dev/) | Backend server and binary bundling |
+| [AutoHotkey](https://www.autohotkey.com/) | The scripting language this whole tool is built for |
+
+Special thanks to the Blockly and AutoHotkey communities for their extensive documentation and inspiration.
+
+---
+
 ## 📄 License
 
-- No License Right now I will add it later!
+MIT License — see [LICENSE](LICENSE) for details.
 
 ## 👉 Following the discuss
 
