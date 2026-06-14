@@ -176,4 +176,8 @@ Contributions are welcome! Feel free to:
 
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+- No License Right now I will add it later!
+
+## 👉 Following the discuss
+
+Click [here](https://www.autohotkey.com/boards/viewtopic.php?f=37&t=140800) to follow the discussing on autohotkey forum.
