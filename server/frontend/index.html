@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHK Builder - Visual AutoHotkey Editor</title>
+
+    <!-- Blockly CDN -->
+    <script src="https://unpkg.com/blockly@10.4.3/blockly_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@10.4.3/blocks_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@10.4.3/javascript_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@10.4.3/msg/en.js"></script>
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <div id="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <rect width="28" height="28" rx="6" fill="#7C4DFF"/>
+                    <text x="14" y="20" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="monospace">A</text>
+                </svg>
+                <h1>AHK Builder</h1>
+            </div>
+            <div class="project-name">
+                <input type="text" id="projectName" value="My AutoHotkey Script" spellcheck="false">
+            </div>
+        </div>
+        <div class="topbar-center">
+            <button class="tool-btn" id="btnNew" title="New Project">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                New
+            </button>
+            <button class="tool-btn" id="btnSave" title="Save Project">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+                Save
+            </button>
+            <button class="tool-btn" id="btnLoad" title="Load Project">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Load
+            </button>
+            <div class="separator"></div>
+            <button class="tool-btn btn-export" id="btnExportAHK" title="Export AHK file">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Export .ahk
+            </button>
+            <button class="tool-btn btn-play" id="btnRun" title="Run with AutoHotkey">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Run
+            </button>
+            <div class="separator"></div>
+            <div class="version-toggle" id="versionToggle" title="Switch between AHK v1 and v2">
+                <span class="toggle-option active" data-version="v1">v1</span>
+                <span class="toggle-divider">|</span>
+                <span class="toggle-option" data-version="v2">v2</span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <button class="tool-btn" id="btnZoomIn" title="Zoom In">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>
+            </button>
+            <button class="tool-btn" id="btnZoomReset" title="Reset Zoom">100%</button>
+            <button class="tool-btn" id="btnZoomOut" title="Zoom Out">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M8 11h6"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div id="main-container">
+        <!-- Search Bar -->
+        <div id="searchBar">
+            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="searchInput" placeholder="Search blocks..." spellcheck="false">
+            <span id="searchClear" class="search-clear">✕</span>
+            <span id="searchCount" class="search-count"></span>
+        </div>
+
+        <!-- Blockly Workspace -->
+        <div id="blocklyArea">
+            <div id="blocklyDiv"></div>
+        </div>
+
+        <!-- Right Panel: Code Preview + Output -->
+        <div id="rightPanel">
+            <div class="panel-tabs">
+                <button class="tab active" data-tab="code">Generated AHK</button>
+                <button class="tab" data-tab="blocks">Blocks</button>
+            </div>
+            <div id="panelCode" class="panel-content active">
+                <div class="code-toolbar">
+                    <span class="code-label">AutoHotkey Script</span>
+                    <span class="version-badge v1">AHK V1</span>
+                    <div class="code-actions">
+                        <button class="code-btn" id="btnCopyCode" title="Copy to clipboard">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="codeContainer">
+                    <pre id="generatedCode"><code>; Your AutoHotkey script will appear here
+; Drag blocks from the toolbox to start building!</code></pre>
+                </div>
+            </div>
+            <div id="panelBlocks" class="panel-content">
+                <div class="block-info">
+                    <h3>How to use AHK Builder</h3>
+                    <ol>
+                        <li>Drag blocks from the <strong>left toolbox</strong> into the workspace</li>
+                        <li>Snap blocks together to build your script logic</li>
+                        <li>Click on numbers/text to edit values</li>
+                        <li>Right-click blocks to duplicate or delete</li>
+                        <li>Click <strong>Run</strong> to execute with AutoHotkey</li>
+                        <li>Click <strong>Export .ahk</strong> to save as a script file</li>
+                    </ol>
+                    <hr>
+                    <h4>Block Categories</h4>
+                    <ul class="category-list">
+                        <li><span class="cat-dot" style="background:#5CB85C"></span> Mouse</li>
+                        <li><span class="cat-dot" style="background:#4285F4"></span> Keyboard</li>
+                        <li><span class="cat-dot" style="background:#F9A825"></span> Window</li>
+                        <li><span class="cat-dot" style="background:#AB47BC"></span> Control Flow</li>
+                        <li><span class="cat-dot" style="background:#E53935"></span> Variables</li>
+                        <li><span class="cat-dot" style="background:#546E7A"></span> Dialog</li>
+                        <li><span class="cat-dot" style="background:#6D4C41"></span> File</li>
+                        <li><span class="cat-dot" style="background:#00BCD4"></span> Image/Pixel</li>
+                        <li><span class="cat-dot" style="background:#FF6F00"></span> Sound</li>
+                        <li><span class="cat-dot" style="background:#00897B"></span> String</li>
+                        <li><span class="cat-dot" style="background:#1E88E5"></span> Math</li>
+                        <li><span class="cat-dot" style="background:#00897B"></span> Date/Time</li>
+                        <li><span class="cat-dot" style="background:#795548"></span> Registry/INI</li>
+                        <li><span class="cat-dot" style="background:#F9A825"></span> Control</li>
+                        <li><span class="cat-dot" style="background:#EC407A"></span> System</li>
+                        <li><span class="cat-dot" style="background:#7C4DFF"></span> GUI</li>
+                        <li><span class="cat-dot" style="background:#7C4DFF"></span> Objects</li>
+                        <li><span class="cat-dot" style="background:#455A64"></span> Directives</li>
+                        <li><span class="cat-dot" style="background:#EC407A"></span> Actions</li>
+                        <li><span class="cat-dot" style="background:#607D8B"></span> ⚡ Custom</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="statusbar">
+        <span id="statusText">Ready</span>
+        <span id="blockCount">0 blocks</span>
+    </div>
+
+    <!-- Hidden file input for loading projects -->
+    <input type="file" id="fileInput" accept=".xml" style="display:none">
+
+    <!-- Blockly Toolbox XML (defined as a template) -->
+    <xml id="toolbox" style="display:none">
+        <!-- Mouse Category -->
+        <category name="Mouse" colour="#5CB85C" expanded="false">
+            <block type="ahk_mouse_click"></block>
+            <block type="ahk_mouse_move"></block>
+            <block type="ahk_mouse_drag"></block>
+            <block type="ahk_mouse_wheel"></block>
+            <block type="ahk_mouse_get_pos"></block>
+        </category>
+
+        <!-- Keyboard Category -->
+        <category name="Keyboard" colour="#4285F4" expanded="false">
+            <block type="ahk_send"></block>
+            <block type="ahk_send_input"></block>
+            <block type="ahk_send_variant"></block>
+            <block type="ahk_type_text"></block>
+            <block type="ahk_hotkey"></block>
+            <block type="ahk_hotkey_cmd"></block>
+            <block type="ahk_hotstring"></block>
+            <block type="ahk_key_wait"></block>
+            <block type="ahk_send_level"></block>
+            <block type="ahk_set_delay"></block>
+            <block type="ahk_hot_if"></block>
+        </category>
+
+        <!-- Window Category -->
+        <category name="Window" colour="#F9A825" expanded="false">
+            <block type="ahk_win_activate"></block>
+            <block type="ahk_win_active"></block>
+            <block type="ahk_win_close"></block>
+            <block type="ahk_win_kill"></block>
+            <block type="ahk_win_minimize"></block>
+            <block type="ahk_win_maximize"></block>
+            <block type="ahk_win_restore"></block>
+            <block type="ahk_win_move"></block>
+            <block type="ahk_win_wait"></block>
+            <block type="ahk_win_wait_active"></block>
+            <block type="ahk_win_wait_close"></block>
+            <block type="ahk_win_wait_not_active"></block>
+            <block type="ahk_win_get_active_title"></block>
+            <block type="ahk_win_exist"></block>
+            <block type="ahk_win_get_pos"></block>
+            <block type="ahk_win_get_text"></block>
+            <block type="ahk_win_redraw"></block>
+            <block type="ahk_win_get"></block>
+            <block type="ahk_win_set"></block>
+            <block type="ahk_win_set_title"></block>
+            <block type="ahk_win_hide"></block>
+            <block type="ahk_win_show"></block>
+            <block type="ahk_win_set_always_on_top"></block>
+            <block type="ahk_win_get_class"></block>
+            <block type="ahk_win_get_id"></block>
+            <block type="ahk_win_minimize_all"></block>
+            <block type="ahk_set_title_match"></block>
+        </category>
+
+        <!-- Control Flow Category -->
+        <category name="Control Flow" colour="#AB47BC" expanded="true">
+            <block type="ahk_label"></block>
+            <block type="ahk_goto"></block>
+            <block type="ahk_gosub"></block>
+            <block type="ahk_return"></block>
+            <block type="ahk_loop"></block>
+            <block type="ahk_loop_until"></block>
+            <block type="ahk_loop_files"></block>
+            <block type="ahk_loop_read"></block>
+            <block type="ahk_loop_parse"></block>
+            <block type="ahk_for_loop"></block>
+            <block type="ahk_while"></block>
+            <block type="controls_if"></block>
+            <block type="ahk_try"></block>
+            <block type="ahk_catch"></block>
+            <block type="ahk_throw"></block>
+            <block type="ahk_switch"></block>
+            <block type="ahk_sleep"></block>
+            <block type="ahk_run"></block>
+            <block type="ahk_run_wait"></block>
+            <block type="ahk_wait_pixel"></block>
+            <block type="ahk_break"></block>
+            <block type="ahk_continue"></block>
+            <block type="ahk_set_timer"></block>
+        </category>
+
+        <!-- Variables Category -->
+        <category name="Variables" colour="#E53935" expanded="false">
+            <block type="ahk_set_variable"></block>
+            <block type="ahk_get_variable"></block>
+            <block type="ahk_math_expression"></block>
+            <block type="ahk_string_concat"></block>
+            <block type="ahk_clipboard"></block>
+            <block type="ahk_random"></block>
+            <block type="ahk_env_get"></block>
+            <block type="ahk_env_set"></block>
+        </category>
+
+        <!-- Dialog Category -->
+        <category name="Dialog" colour="#546E7A" expanded="false">
+            <block type="ahk_msgbox"></block>
+            <block type="ahk_inputbox"></block>
+            <block type="ahk_tooltip"></block>
+            <block type="ahk_splash_text"></block>
+            <block type="ahk_splash_image"></block>
+            <block type="ahk_progress"></block>
+            <block type="ahk_tray_tip"></block>
+            <block type="ahk_clip_wait"></block>
+        </category>
+
+        <!-- File Category -->
+        <category name="File" colour="#6D4C41" expanded="false">
+            <block type="ahk_file_append"></block>
+            <block type="ahk_file_read"></block>
+            <block type="ahk_file_read_line"></block>
+            <block type="ahk_file_delete"></block>
+            <block type="ahk_file_copy"></block>
+            <block type="ahk_file_move"></block>
+            <block type="ahk_file_exist"></block>
+            <block type="ahk_file_get_size"></block>
+            <block type="ahk_file_time"></block>
+            <block type="ahk_file_attrib"></block>
+            <block type="ahk_file_get_version"></block>
+            <block type="ahk_file_recycle"></block>
+            <block type="ahk_file_encoding"></block>
+            <block type="ahk_split_path"></block>
+            <block type="ahk_dir_create"></block>
+            <block type="ahk_file_remove_dir"></block>
+            <block type="ahk_file_copy_dir"></block>
+            <block type="ahk_dir_v2"></block>
+            <block type="ahk_file_select"></block>
+            <block type="ahk_file_shortcut"></block>
+        </category>
+
+        <!-- Image Category -->
+        <category name="Image" colour="#00BCD4" expanded="false">
+            <block type="ahk_image_search"></block>
+            <block type="ahk_pixel_search"></block>
+            <block type="ahk_pixel_get_color"></block>
+        </category>
+
+        <!-- Sound Category -->
+        <category name="Sound" colour="#FF6F00" expanded="false">
+            <block type="ahk_sound_beep"></block>
+            <block type="ahk_sound_play"></block>
+            <block type="ahk_sound_volume"></block>
+            <block type="ahk_sound_get_set"></block>
+            <block type="ahk_sound_wave"></block>
+        </category>
+
+        <!-- Actions Category -->
+        <category name="Actions" colour="#EC407A" expanded="false">
+            <block type="ahk_comment"></block>
+            <block type="ahk_msgbox_info"></block>
+            <block type="ahk_exit"></block>
+            <block type="ahk_reload"></block>
+            <block type="ahk_process"></block>
+            <block type="ahk_block_input"></block>
+            <block type="ahk_suspend"></block>
+            <block type="ahk_pause"></block>
+            <block type="ahk_env_update"></block>
+            <block type="ahk_send_email"></block>
+            <block type="ahk_set_working_dir"></block>
+            <block type="ahk_set_env"></block>
+            <block type="ahk_set_batch_lines"></block>
+            <block type="ahk_thread"></block>
+            <block type="ahk_directive"></block>
+        </category>
+
+        <!-- String Category -->
+        <category name="String" colour="#00897B" expanded="false">
+            <block type="ahk_strlen"></block>
+            <block type="ahk_strlen_v1"></block>
+            <block type="ahk_string_mid"></block>
+            <block type="ahk_substr"></block>
+            <block type="ahk_strreplace"></block>
+            <block type="ahk_strcompare"></block>
+            <block type="ahk_instr"></block>
+            <block type="ahk_string_get_pos"></block>
+            <block type="ahk_strcase"></block>
+            <block type="ahk_string_case_v1"></block>
+            <block type="ahk_trim"></block>
+            <block type="ahk_string_trim_v1"></block>
+            <block type="ahk_string_split"></block>
+            <block type="ahk_strsplit_v2"></block>
+            <block type="ahk_chr_ord"></block>
+            <block type="ahk_regex_match"></block>
+            <block type="ahk_regex_replace"></block>
+            <block type="ahk_string_case_sense"></block>
+            <block type="ahk_format"></block>
+        </category>
+
+        <!-- Math Category -->
+        <category name="Math" colour="#1E88E5" expanded="false">
+            <block type="ahk_math_func"></block>
+            <block type="ahk_atan2"></block>
+            <block type="ahk_minmax"></block>
+            <block type="ahk_round"></block>
+            <block type="ahk_mod"></block>
+            <block type="ahk_math_expression"></block>
+        </category>
+
+        <!-- Date/Time Category -->
+        <category name="Date/Time" colour="#00897B" expanded="false">
+            <block type="ahk_format_time"></block>
+            <block type="ahk_dateadd"></block>
+            <block type="ahk_datediff"></block>
+            <block type="ahk_env_time"></block>
+        </category>
+
+        <!-- Registry/INI Category -->
+        <category name="Registry/INI" colour="#795548" expanded="false">
+            <block type="ahk_reg_read"></block>
+            <block type="ahk_reg_write"></block>
+            <block type="ahk_reg_delete"></block>
+            <block type="ahk_ini_read"></block>
+            <block type="ahk_ini_write"></block>
+            <block type="ahk_ini_delete"></block>
+        </category>
+
+        <!-- Control Category -->
+        <category name="Control" colour="#F9A825" expanded="false">
+            <block type="ahk_control_click"></block>
+            <block type="ahk_control_get_text"></block>
+            <block type="ahk_control_set_text"></block>
+            <block type="ahk_control_send"></block>
+            <block type="ahk_control_send_raw"></block>
+            <block type="ahk_control_focus"></block>
+            <block type="ahk_control_get_pos"></block>
+            <block type="ahk_control_move"></block>
+            <block type="ahk_post_message"></block>
+            <block type="ahk_status_bar"></block>
+        </category>
+
+        <!-- System Category -->
+        <category name="System" colour="#EC407A" expanded="false">
+            <block type="ahk_get_key_state"></block>
+            <block type="ahk_set_capslock"></block>
+            <block type="ahk_coord_mode"></block>
+            <block type="ahk_dll_call"></block>
+            <block type="ahk_com_object"></block>
+            <block type="ahk_com_obj_get"></block>
+            <block type="ahk_com_obj_active"></block>
+            <block type="ahk_com_obj_connect"></block>
+            <block type="ahk_com_call"></block>
+            <block type="ahk_com_value"></block>
+            <block type="ahk_download"></block>
+            <block type="ahk_url_download"></block>
+            <block type="ahk_env_update"></block>
+            <block type="ahk_sys_get"></block>
+            <block type="ahk_var_set_capacity"></block>
+            <block type="ahk_buffer"></block>
+            <block type="ahk_num_get_put"></block>
+            <block type="ahk_func_meta"></block>
+            <block type="ahk_callback_create"></block>
+            <block type="ahk_critical"></block>
+            <block type="ahk_set_sys_delay"></block>
+            <block type="ahk_debug_commands"></block>
+            <block type="ahk_drive"></block>
+            <block type="ahk_on_clipboard_change"></block>
+        </category>
+
+        <!-- GUI Category -->
+        <category name="GUI" colour="#7C4DFF" expanded="false">
+            <block type="ahk_gui_add"></block>
+            <block type="ahk_gui_show"></block>
+            <block type="ahk_gui_hide"></block>
+            <block type="ahk_gui_submit"></block>
+            <block type="ahk_gui_control"></block>
+            <block type="ahk_gui_font"></block>
+            <block type="ahk_gui_color"></block>
+        </category>
+
+        <!-- Objects Category -->
+        <category name="Objects" colour="#7C4DFF" expanded="false">
+            <block type="ahk_array"></block>
+            <block type="ahk_map"></block>
+            <block type="ahk_object"></block>
+            <block type="ahk_obj_inspect"></block>
+        </category>
+
+        <!-- Constants Category -->
+        <category name="Constants" colour="#78909C" expanded="false">
+            <block type="ahk_boolean"></block>
+            <block type="ahk_type_check"></block>
+            <block type="ahk_type_fn"></block>
+            <block type="ahk_isset"></block>
+        </category>
+
+        <!-- Raw Code Category -->
+        <category name="⚡ Custom" colour="#607D8B" expanded="false">
+            <block type="ahk_raw_code"></block>
+            <block type="ahk_raw_code_multi"></block>
+            <block type="ahk_function_call"></block>
+            <block type="ahk_function_call_expr"></block>
+        </category>
+    </xml>
+
+    <!-- Scripts -->
+    <script src="scripts/blocks.js"></script>
+    <script src="scripts/blocks-extra.js"></script>
+    <script src="scripts/blocks-v1.js"></script>
+    <script src="scripts/generator.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+</html>
